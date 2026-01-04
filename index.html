@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Editor PDF online - Aggiungi testo, firme e immagini ai tuoi PDF">
+    <meta name="theme-color" content="#4CAF50">
+    <title>PDF Editor - Modifica i tuoi PDF</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>📄 PDF Editor</h1>
+            <p class="subtitle">Modifica i tuoi PDF facilmente</p>
+        </header>
+
+        <!-- Upload Section -->
+        <div id="uploadSection" class="upload-section">
+            <div class="upload-box">
+                <div class="upload-icon">📤</div>
+                <h2>Carica il tuo PDF</h2>
+                <p>Trascina qui il file o clicca per selezionarlo</p>
+                <input type="file" id="pdfInput" accept="application/pdf" hidden>
+                <button class="btn btn-primary" onclick="document.getElementById('pdfInput').click()">
+                    Seleziona PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Editor Section -->
+        <div id="editorSection" class="editor-section" style="display: none;">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button class="btn btn-tool" id="addTextBtn" title="Aggiungi Testo">
+                    ✏️ Testo
+                </button>
+                <button class="btn btn-tool" id="addSignatureBtn" title="Aggiungi Firma">
+                    ✍️ Firma
+                </button>
+                <button class="btn btn-tool" id="addImageBtn" title="Aggiungi Immagine">
+                    🖼️ Immagine
+                </button>
+                <div class="toolbar-divider"></div>
+                <button class="btn btn-tool" id="deleteBtn" title="Elimina Elemento Selezionato">
+                    🗑️ Elimina
+                </button>
+                <div class="toolbar-divider"></div>
+                <button class="btn btn-success" id="saveBtn">
+                    💾 Salva PDF
+                </button>
+                <button class="btn btn-secondary" id="newPdfBtn">
+                    🔄 Nuovo PDF
+                </button>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="canvas-container">
+                <div class="page-controls">
+                    <button class="btn btn-sm" id="prevPageBtn">◀ Precedente</button>
+                    <span id="pageInfo">Pagina 1 di 1</span>
+                    <button class="btn btn-sm" id="nextPageBtn">Successiva ▶</button>
+                    <div class="zoom-controls">
+                        <button class="btn btn-sm" id="zoomOutBtn">🔍-</button>
+                        <span id="zoomLevel">100%</span>
+                        <button class="btn btn-sm" id="zoomInBtn">🔍+</button>
+                    </div>
+                </div>
+                <div id="pdfContainer" class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                    <div id="annotationLayer" class="annotation-layer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature Modal -->
+        <div id="signatureModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Disegna la tua Firma</h2>
+                    <button class="close-btn" onclick="closeSignatureModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <canvas id="signatureCanvas"></canvas>
+                    <div class="signature-controls">
+                        <label>Colore:
+                            <input type="color" id="signatureColor" value="#000000">
+                        </label>
+                        <label>Spessore:
+                            <input type="range" id="signatureWidth" min="1" max="10" value="2">
+                            <span id="widthValue">2</span>px
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="clearSignature()">🗑️ Cancella</button>
+                    <button class="btn btn-primary" onclick="saveSignature()">✓ Usa Firma</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Input (hidden) -->
+        <input type="file" id="imageInput" accept="image/*" hidden>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+            <p>Caricamento in corso...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registrato:', reg))
+                    .catch(err => console.log('Errore Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>

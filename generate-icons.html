@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PWA Icons</title>
+</head>
+<body>
+    <h1>Generating Icons...</h1>
+    <div id="output"></div>
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+
+        sizes.forEach(size => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // PDF icon
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(size * 0.25, size * 0.2, size * 0.5, size * 0.6);
+
+            // Fold corner
+            ctx.fillStyle = '#e0e0e0';
+            ctx.beginPath();
+            ctx.moveTo(size * 0.75, size * 0.2);
+            ctx.lineTo(size * 0.75, size * 0.35);
+            ctx.lineTo(size * 0.6, size * 0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            // Text "PDF"
+            ctx.fillStyle = '#4CAF50';
+            ctx.font = `bold ${size * 0.15}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('PDF', size * 0.5, size * 0.5);
+
+            // Download link
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `icon-${size}x${size}.png`;
+                link.textContent = `Download icon-${size}x${size}.png`;
+                link.style.display = 'block';
+                link.style.margin = '10px';
+                document.getElementById('output').appendChild(link);
+            });
+        });
+    </script>
+</body>
+</html>
