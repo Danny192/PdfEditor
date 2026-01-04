@@ -104,6 +104,13 @@
                     <button class="close-btn" onclick="closeSignatureModal()">&times;</button>
                 </div>
                 <div class="modal-body">
+                    <!-- Firme salvate -->
+                    <div id="savedSignatures" class="saved-signatures" style="display: none;">
+                        <h3>Firme salvate</h3>
+                        <div id="savedSignaturesGrid" class="signatures-grid"></div>
+                    </div>
+
+                    <h3>Disegna nuova firma</h3>
                     <canvas id="signatureCanvas"></canvas>
                     <div class="signature-controls">
                         <label>Colore:
@@ -112,6 +119,10 @@
                         <label>Spessore:
                             <input type="range" id="signatureWidth" min="1" max="10" value="2">
                             <span id="widthValue">2</span>px
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="saveSignatureCheck" checked>
+                            Salva questa firma per riutilizzarla
                         </label>
                     </div>
                 </div>
@@ -139,9 +150,42 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('Service Worker registrato:', reg))
+                    .then(reg => {
+                        console.log('Service Worker registrato:', reg);
+
+                        // Controlla aggiornamenti ogni 60 secondi
+                        setInterval(() => {
+                            reg.update();
+                        }, 60000);
+                    })
                     .catch(err => console.log('Errore Service Worker:', err));
+
+                // Ascolta messaggi dal Service Worker
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    if (event.data.type === 'SW_UPDATED') {
+                        showUpdateNotification(event.data.version);
+                    }
+                });
             });
+        }
+
+        function showUpdateNotification(version) {
+            const notification = document.createElement('div');
+            notification.className = 'update-notification';
+            notification.innerHTML = `
+                <div class="update-content">
+                    <strong>🎉 Nuova versione disponibile!</strong>
+                    <p>Versione ${version} - Clicca per aggiornare</p>
+                </div>
+            `;
+            notification.onclick = () => {
+                window.location.reload();
+            };
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
         }
     </script>
 </body>

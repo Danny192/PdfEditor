@@ -488,6 +488,47 @@ function openSignatureModal() {
     const modal = document.getElementById('signatureModal');
     modal.classList.add('active');
     clearSignature();
+    loadSavedSignatures();
+}
+
+// Gestione firme salvate in localStorage
+function loadSavedSignatures() {
+    const signatures = JSON.parse(localStorage.getItem('savedSignatures') || '[]');
+    const container = document.getElementById('savedSignaturesGrid');
+    const savedSection = document.getElementById('savedSignatures');
+
+    if (signatures.length === 0) {
+        savedSection.style.display = 'none';
+        return;
+    }
+
+    savedSection.style.display = 'block';
+    container.innerHTML = '';
+
+    signatures.forEach((signature, index) => {
+        const item = document.createElement('div');
+        item.className = 'signature-item';
+        item.innerHTML = `
+            <img src="${signature.data}" alt="Firma ${index + 1}">
+            <button class="signature-item-delete" onclick="deleteSavedSignature(${index}); event.stopPropagation();">×</button>
+        `;
+        item.onclick = () => {
+            useSavedSignature(signature.data);
+        };
+        container.appendChild(item);
+    });
+}
+
+function useSavedSignature(imageData) {
+    addSignatureAnnotation(imageData);
+    closeSignatureModal();
+}
+
+function deleteSavedSignature(index) {
+    const signatures = JSON.parse(localStorage.getItem('savedSignatures') || '[]');
+    signatures.splice(index, 1);
+    localStorage.setItem('savedSignatures', JSON.stringify(signatures));
+    loadSavedSignatures();
 }
 
 function closeSignatureModal() {
@@ -573,8 +614,45 @@ function clearSignature() {
 }
 
 function saveSignature() {
-    const imageData = state.signatureCanvas.toDataURL('image/png');
-    addSignatureAnnotation(imageData);
+    const canvas = state.signatureCanvas;
+    const ctx = state.signatureCtx;
+
+    // Verifica se il canvas ha contenuto
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const hasContent = imageData.data.some(channel => channel !== 0);
+
+    if (!hasContent) {
+        alert('Disegna prima la tua firma!');
+        return;
+    }
+
+    const signatureData = canvas.toDataURL('image/png');
+
+    // Salva la firma in localStorage se richiesto
+    if (document.getElementById('saveSignatureCheck').checked) {
+        const signatures = JSON.parse(localStorage.getItem('savedSignatures') || '[]');
+
+        // Limita a massimo 10 firme salvate
+        if (signatures.length >= 10) {
+            if (!confirm('Hai già 10 firme salvate. Vuoi sostituire la più vecchia?')) {
+                // Usa la firma senza salvarla
+                addSignatureAnnotation(signatureData);
+                closeSignatureModal();
+                return;
+            }
+            signatures.shift(); // Rimuovi la più vecchia
+        }
+
+        // Aggiungi la nuova firma
+        signatures.push({
+            data: signatureData,
+            timestamp: Date.now()
+        });
+
+        localStorage.setItem('savedSignatures', JSON.stringify(signatures));
+    }
+
+    addSignatureAnnotation(signatureData);
     closeSignatureModal();
 }
 
@@ -690,7 +768,9 @@ function showLoading(show) {
     document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
 }
 
-// Utility functions
+// Utility functions - esporta per uso globale
 window.closeSignatureModal = closeSignatureModal;
 window.clearSignature = clearSignature;
 window.saveSignature = saveSignature;
+window.deleteSavedSignature = deleteSavedSignature;
+window.useSavedSignature = useSavedSignature;

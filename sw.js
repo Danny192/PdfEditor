@@ -1,4 +1,6 @@
-const CACHE_NAME = 'pdf-editor-v1';
+// IMPORTANTE: Incrementa questo numero ad ogni deploy per forzare l'aggiornamento
+const VERSION = '1.2.0';
+const CACHE_NAME = `pdf-editor-v${VERSION}`;
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -12,14 +14,17 @@ const ASSETS_TO_CACHE = [
 
 // Install event - cache assets
 self.addEventListener('install', (event) => {
-    console.log('Service Worker: Installing...');
+    console.log(`Service Worker: Installing v${VERSION}...`);
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('Service Worker: Caching assets');
                 return cache.addAll(ASSETS_TO_CACHE);
             })
-            .then(() => self.skipWaiting())
+            .then(() => {
+                console.log(`Service Worker v${VERSION} installed, taking control...`);
+                return self.skipWaiting();
+            })
             .catch((error) => {
                 console.error('Service Worker: Cache failed', error);
             })
@@ -28,17 +33,28 @@ self.addEventListener('install', (event) => {
 
 // Activate event - cleanup old caches
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker: Activating...');
+    console.log(`Service Worker v${VERSION}: Activating...`);
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cache) => {
                     if (cache !== CACHE_NAME) {
-                        console.log('Service Worker: Clearing old cache');
+                        console.log(`Service Worker: Clearing old cache: ${cache}`);
                         return caches.delete(cache);
                     }
                 })
             );
+        }).then(() => {
+            console.log(`Service Worker v${VERSION} activated, claiming clients...`);
+            // Notifica i client dell'aggiornamento
+            return self.clients.matchAll().then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({
+                        type: 'SW_UPDATED',
+                        version: VERSION
+                    });
+                });
+            });
         })
     );
     return self.clients.claim();
