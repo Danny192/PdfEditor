@@ -4,14 +4,37 @@ Un'applicazione web progressiva (PWA) completa per modificare file PDF direttame
 
 ## ✨ Funzionalità
 
+### Gestione PDF
 - 📤 **Carica PDF**: Trascina e rilascia o seleziona file PDF dal tuo dispositivo
-- ✏️ **Aggiungi Testo**: Inserisci testo personalizzato ovunque nel documento
-- ✍️ **Firme Digitali**: Disegna la tua firma direttamente nell'app
-- 🖼️ **Inserisci Immagini**: Aggiungi immagini ai tuoi PDF
-- 💾 **Salva PDF**: Scarica il documento modificato
-- 📱 **PWA**: Installabile su desktop e mobile, funziona offline
-- 🔒 **Privacy**: Tutto avviene nel browser, nessun caricamento su server
-- 🎨 **Interfaccia Moderna**: Design responsivo e intuitivo
+- 🔍 **Rendering HD**: Qualità 2.0x per PDF cristallini
+- 📄 **Multi-pagina**: Naviga tra le pagine con facilità
+- 🔎 **Zoom**: Da 50% a 300% per dettagli perfetti
+
+### Editing Avanzato
+- ✏️ **Testo Personalizzato**:
+  - Dimensioni da 12px a 32px
+  - Colori personalizzabili
+  - Supporto multi-linea
+  - Trascinabile e ridimensionabile
+- ✍️ **Firme Digitali**:
+  - Disegna con il mouse o touch
+  - Salva fino a 10 firme per riutilizzarle
+  - Colore e spessore personalizzabili
+- 🖼️ **Immagini**: Carica e posiziona immagini ovunque
+- 🗑️ **Elimina**: Pulsante × diretto su ogni elemento
+
+### PWA & Aggiornamenti
+- 📱 **Installabile**: Su desktop e mobile come app nativa
+- 🔄 **Auto-update**: Sistema di versioning automatico
+- 🔔 **Notifiche**: Avviso quando disponibile nuova versione
+- 📴 **Offline**: Funziona senza connessione
+- 💾 **Salvataggio Locale**: Firme salvate in localStorage
+
+### Sicurezza & Privacy
+- 🔒 **100% Privato**: Tutto avviene nel browser
+- 🚫 **Zero Server**: Nessun caricamento di file
+- 🔐 **Sicuro**: Header di sicurezza configurati
+- 🎨 **Moderno**: Design responsivo e intuitivo
 
 ## 🚀 Installazione Locale
 
@@ -79,17 +102,45 @@ netlify deploy --prod
 
 ## 🎯 Come Usare
 
+### Caricamento PDF
 1. **Carica un PDF**: Clicca su "Seleziona PDF" o trascina il file
-2. **Aggiungi Elementi**:
-   - Click su "Testo" e poi sul PDF per aggiungere testo
-   - Click su "Firma" per disegnare una firma
-   - Click su "Immagine" per caricare un'immagine
-3. **Modifica Elementi**:
-   - Trascina per spostare
-   - Usa i punti di ridimensionamento per cambiare dimensioni
-   - Click per selezionare, tasto Canc per eliminare
-4. **Naviga**: Usa i pulsanti per cambiare pagina e zoom
-5. **Salva**: Click su "Salva PDF" per scaricare il documento modificato
+2. **Naviga**: Usa frecce per cambiare pagina
+3. **Zoom**: Click su 🔍+ / 🔍- per ingrandire/ridurre
+
+### Aggiunta Testo
+1. Scegli dimensione font e colore dalla toolbar
+2. Click su "✏️ Testo"
+3. Click sul PDF dove vuoi il testo
+4. Scrivi direttamente (il campo è già attivo!)
+5. Premi Invio per andare a capo
+
+### Firme Digitali
+1. Click su "✍️ Firma"
+2. **Usa firma salvata**: Click su una firma esistente (se ne hai)
+3. **Nuova firma**:
+   - Disegna con mouse/dito
+   - Scegli colore e spessore
+   - Spunta "Salva" per riutilizzarla
+   - Click "✓ Usa Firma"
+4. Le firme salvate appaiono in alto nel modal (max 10)
+5. Hover su firma salvata → click × per eliminarla
+
+### Editing Elementi
+- **Sposta**: Click e trascina l'elemento
+- **Ridimensiona**: Trascina i pallini agli angoli
+- **Edita testo**: Click sul testo per modificarlo
+- **Elimina**: Hover sull'elemento → click sul pulsante ×
+- **Elimina (alternativo)**: Seleziona + tasto `Canc`
+
+### Salvataggio
+1. Click su "💾 Salva PDF"
+2. Il PDF viene scaricato con tutte le modifiche
+3. Qualità originale preservata
+
+### Aggiornamenti
+- L'app controlla aggiornamenti ogni minuto
+- Ricevi notifica 🎉 quando c'è nuova versione
+- Click sulla notifica per aggiornare subito
 
 ## 🔒 Privacy e Sicurezza
 
