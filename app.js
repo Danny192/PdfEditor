@@ -141,7 +141,8 @@ async function renderPage(pageNum) {
         const canvas = document.getElementById('pdfCanvas');
         const ctx = canvas.getContext('2d');
 
-        const viewport = page.getViewport({ scale: state.zoom * 1.5 });
+        // Aumenta la scala per migliore qualità (2.0 invece di 1.5)
+        const viewport = page.getViewport({ scale: state.zoom * 2.0 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
@@ -149,6 +150,10 @@ async function renderPage(pageNum) {
             canvasContext: ctx,
             viewport: viewport
         };
+
+        // Migliora la qualità del rendering
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
         await page.render(renderContext).promise;
 
@@ -213,20 +218,38 @@ function handleCanvasClick(e) {
 
 // Aggiunta annotazioni
 function addTextAnnotation(x, y) {
+    // Prendi i valori dai controlli della toolbar
+    const fontSize = parseInt(document.getElementById('fontSizeSelect').value);
+    const color = document.getElementById('textColorPicker').value;
+
     const annotation = {
         type: 'text',
         page: state.currentPage,
         x: x,
         y: y,
-        width: 200,
-        height: 40,
-        text: 'Testo',
-        fontSize: 16,
-        color: '#000000'
+        width: 250,
+        height: Math.max(50, fontSize * 3),
+        text: 'Scrivi qui...',
+        fontSize: fontSize,
+        color: color
     };
 
     state.annotations.push(annotation);
     renderAnnotations();
+
+    // Seleziona automaticamente il nuovo elemento e focalizza il textarea
+    setTimeout(() => {
+        const allAnnotations = state.annotations.filter(ann => ann.page === state.currentPage);
+        const index = allAnnotations.length - 1;
+        selectAnnotation(index);
+
+        // Focalizza il textarea per iniziare a scrivere
+        const textareas = document.querySelectorAll('.annotation-text textarea');
+        if (textareas[index]) {
+            textareas[index].focus();
+            textareas[index].select();
+        }
+    }, 100);
 }
 
 function addSignatureAnnotation(imageData) {
@@ -284,20 +307,49 @@ function createAnnotationElement(annotation, index) {
     div.dataset.index = index;
 
     if (annotation.type === 'text') {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = annotation.text;
-        input.style.fontSize = annotation.fontSize + 'px';
-        input.style.color = annotation.color;
-        input.addEventListener('input', (e) => {
+        // Usa textarea invece di input per supportare testo multi-linea
+        const textarea = document.createElement('textarea');
+        textarea.value = annotation.text;
+        textarea.style.fontSize = annotation.fontSize + 'px';
+        textarea.style.color = annotation.color;
+        textarea.style.width = '100%';
+        textarea.style.height = '100%';
+        textarea.style.border = 'none';
+        textarea.style.outline = 'none';
+        textarea.style.resize = 'none';
+        textarea.style.background = 'rgba(255, 255, 255, 0.95)';
+        textarea.style.padding = '5px';
+        textarea.style.fontFamily = 'Arial, sans-serif';
+        textarea.addEventListener('input', (e) => {
             annotation.text = e.target.value;
         });
-        div.appendChild(input);
+        // Impedisci che il click sul textarea attivi il drag
+        textarea.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+        div.appendChild(textarea);
     } else if (annotation.type === 'signature' || annotation.type === 'image') {
         const img = document.createElement('img');
         img.src = annotation.imageData;
         div.appendChild(img);
     }
+
+    // Pulsante cancellazione diretto sull'elemento
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'annotation-delete-btn';
+    deleteBtn.innerHTML = '×';
+    deleteBtn.title = 'Elimina';
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const allAnnotations = state.annotations.filter(ann => ann.page === state.currentPage);
+        const annotationToDelete = allAnnotations[index];
+        const globalIndex = state.annotations.indexOf(annotationToDelete);
+        if (globalIndex > -1) {
+            state.annotations.splice(globalIndex, 1);
+            renderAnnotations();
+        }
+    });
+    div.appendChild(deleteBtn);
 
     // Draggable
     makeDraggable(div, annotation);
@@ -553,16 +605,28 @@ async function savePdf() {
             const page = pages[pageNum - 1];
             const { width, height } = page.getSize();
 
-            // Scala per convertire coordinate canvas a PDF
-            const scale = 1.5 * state.zoom;
+            // Scala per convertire coordinate canvas a PDF (2.0 per qualità migliorata)
+            const scale = 2.0 * state.zoom;
 
             for (const ann of pageAnnotations) {
                 if (ann.type === 'text') {
-                    page.drawText(ann.text, {
-                        x: ann.x / scale,
-                        y: height - (ann.y / scale) - (ann.fontSize / scale),
-                        size: ann.fontSize / scale,
-                        color: PDFLib.rgb(0, 0, 0)
+                    // Converti colore hex in RGB
+                    const hexColor = ann.color || '#000000';
+                    const r = parseInt(hexColor.substr(1, 2), 16) / 255;
+                    const g = parseInt(hexColor.substr(3, 2), 16) / 255;
+                    const b = parseInt(hexColor.substr(5, 2), 16) / 255;
+
+                    // Dividi il testo in righe per supportare testo multi-linea
+                    const lines = ann.text.split('\n');
+                    lines.forEach((line, lineIndex) => {
+                        if (line.trim()) {
+                            page.drawText(line, {
+                                x: ann.x / scale,
+                                y: height - (ann.y / scale) - (ann.fontSize / scale) - (lineIndex * ann.fontSize / scale * 1.2),
+                                size: ann.fontSize / scale,
+                                color: PDFLib.rgb(r, g, b)
+                            });
+                        }
                     });
                 } else if (ann.type === 'signature' || ann.type === 'image') {
                     try {
